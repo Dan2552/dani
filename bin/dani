@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+set -e
+
+script_dir=$( cd "$( dirname "$0" )" && pwd )
+command=$1
+arguments="${@:2}"
+arg2=$2
+arg3=$3
+all=$*
+lhs=$(echo $arg2 | awk -F\/ '{print $1}')
+rhs=$(echo $arg2 | awk -F\/ '{print $2}')
+clone_path="$script_dir/../clones/$lhs/$rhs"
+install_dir="$script_dir/../install"
+easy_bake_dir="$script_dir/../easy_bake"
+
+format_green='\033[0;32m'
+format_orange='\033[0;33m'
+format_reset='\033[0m'
+format_bold='\033[1;30m'
+
+mkdir "$install_dir" 2>/dev/null || :
+
+function install() {
+  if [[ $lhs != "" && $rhs != "" ]]; then
+    install_by_clone
+  elif [[ $arg2 != "" ]]; then
+    install_by_name
+  else
+    info
+    exit 1
+  fi
+}
+
+function install_by_name() {
+  name="$arg2"
+  path="${easy_bake_dir}/${name}"
+
+  if [[ -f "$path" ]]; then
+    exec $path $arguments
+  else
+    brew search $name >/dev/null
+    if [[ $? == 0 ]]; then
+      brew install $name
+      exit $?
+    else
+      echo "Cannot find $name."  
+    fi
+    
+    exit 1
+  fi
+}
+
+function install_by_clone() {
+  clone
+  dependencies
+
+  ls $clone_path/*.gemspec >/dev/null 2>/dev/null && rubygem="YES"
+  if [[ $rubygem == "YES" ]]; then
+    echo "Detected ${lhs}/${rhs} as rubygem"
+    rubygem
+  else
+    echo "Detected ${lhs}/${rhs} as plain binaries"
+    binaries
+  fi
+}
+
+function clone() {
+  if [[ -d "$clone_path" ]]; then
+    return
+  fi
+
+  mkdir -p $script_dir/../clones/$lhs
+  cd $script_dir/../clones/$lhs
+  git clone "https://github.com/$lhs/$rhs.git"
+}
+
+function dependencies() {
+  cd $script_dir/../clones/$lhs/$rhs
+
+  if [[ -f "./.ruby-version" ]]; then
+    version=$(cat .ruby-version)
+    echo "Detected ruby $version as a dependency..."
+    dani install ruby $version
+    echo ""
+  fi
+}
+
+function rubygem() {
+  echo "Currently unsupported"
+  exit 1
+}
+
+function binaries() {
+  if [[ -d "$clone_path/bin" ]]; then
+    echo -e "Installing from ${format_bold}$lhs/$rhs/bin${format_reset}:"
+    results=$(find "$clone_path/bin/" -maxdepth 1 -perm -111 -type f)
+    for r in $results; do
+      bin_name="$(basename $r)"
+      installed="NO"
+      which "$bin_name" >/dev/null && installed="YES"
+      if [[ "$installed" == "YES" ]]; then
+        echo -e "  * $bin_name (${format_orange}skipped, external binary exists${format_reset})"
+      else
+        if [[ -f "$install_dir/$bin_name" ]]; then
+          echo -e "  * $bin_name (${format_orange}skipped, already installed${format_reset})"
+        else
+          echo -e "  * $bin_name (${format_green}installing${format_reset})"
+          ln -s "$r" "$install_dir/"
+        fi
+      fi
+    done
+  fi
+}
+
+function info() {
+  echo "Dani 0.1.0"
+  echo "Dan installer. Installs things from places."
+  echo ""
+  echo "USAGE:"
+  echo "    dani [COMMAND]"
+  echo ""
+  echo "EXAMPLE:"
+  echo "    dani install Dan2552/blah"
+  echo ""
+  echo "    # will clone the Dan2552/blah repo from Github and try to determine"
+  echo "    # the path where binaries sit. Any binaries it detects will be"
+  echo "    # added to the \$PATH."
+  echo ""
+  echo "COMMAND:"
+  echo "    install, i       Installs a given script"
+}
+
+case "$command" in
+  "install") install;;
+  "i") install;;
+  *) info;;
+esac

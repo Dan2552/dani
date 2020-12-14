@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+
+script_dir=$( cd "$( dirname "$0" )" && pwd )
+
+which dani >/dev/null
+if [[ $? == 0 ]]; then
+  echo "dani is already installed"
+  exit 0
+fi
+
+echo "Detecting shell..."
+
+cat /etc/shells | grep /bash >/dev/null
+if [[ $? == 0 ]]; then
+  echo ""
+  echo "bash is installed"
+  cat ~/.bash_profile | grep "source $script_dir/source-dani-bash" >/dev/null
+  if [[ $? == 0 ]]; then
+    echo "- already added to ~/.bash_profile"
+  else
+    echo "- adding to ~/.bash_profile"
+    echo "" >> ~/.bash_profile
+    echo "source $script_dir/source-dani-bash" >> ~/.bash_profile
+  fi
+fi
+
+cat /etc/shells | grep /zsh >/dev/null
+if [[ $? == 0 ]]; then
+  echo ""
+  echo "zsh is installed"
+  cat ~/.zshrc | grep "source $script_dir/source-dani-zsh" >/dev/null
+  if [[ $? == 0 ]]; then
+    echo "- already added to ~/.zshrc"
+  else
+    echo "- adding to ~/.zshrc"
+    echo "" >> ~/.zshrc
+    echo "source $script_dir/source-dani-zsh" >> ~/.zshrc
+  fi
+fi
+
+cat /etc/shells | grep /fish >/dev/null
+if [[ $? == 0 ]]; then
+  echo ""
+  echo "fish is installed"
+  cat ~/.config/fish/config.fish | grep "source $script_dir/source-dani-fish" >/dev/null
+  if [[ $? == 0 ]]; then
+    echo "- already added to ~/.config/fish/config.fish"
+  else
+    echo "- adding to ~/.config/fish/config.fish"
+    echo "" >> ~/.config/fish/config.fish
+    echo "source $script_dir/source-dani-fish" >> ~/.config/fish/config.fish
+  fi
+fi
+
+echo ""
+echo "Complete! Restart your shell to use dani."

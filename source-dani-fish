@@ -1,0 +1,3 @@
+set script_dir (dirname (status --current-filename))
+
+set PATH $script_dir/bin $PATH

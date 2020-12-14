@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+go() {
+	if [[ $arguments == "" ]]; then
+		ruby-install
+		exit 1
+	fi
+
+	"${HOME}/.rubies/ruby-${arguments}/bin/ruby" -v >/dev/null 2>/dev/null && already_installed="YES"
+	if [[ "$already_installed" == "YES" ]]; then
+		echo -e "  * ruby $arguments (${format_orange}skipped, already installed${format_reset})"
+		exit 0
+	fi
+
+	dependencies
+	ruby-install ruby $arguments --no-reinstall -- --with-openssl-dir=$(brew --prefix openssl) || echo "An error occurred while installing ruby"
+}
+
+dependencies() {
+	which ruby-install >/dev/null || dani install ruby-install
+	source /usr/local/share/ruby-install/ruby-install.sh &&
+		source /usr/local/share/ruby-install/functions.sh &&
+		source /usr/local/share/ruby-install/functions.sh &&
+		package_manager=brew ruby=ruby ruby_version="$arguments" install_deps
+}
+
+arguments="${@:2}"
+format_orange='\033[0;33m'
+format_reset='\033[0m'
+set -e
+go
