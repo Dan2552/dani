@@ -44,9 +44,9 @@ function install_by_name() {
       brew install $name
       exit $?
     else
-      echo "Cannot find $name."  
+      echo "Cannot find $name."
     fi
-    
+
     exit 1
   fi
 }
@@ -94,11 +94,11 @@ function rubygem() {
 function binaries() {
   if [[ -d "$clone_path/bin" ]]; then
     echo -e "Installing from ${format_bold}$lhs/$rhs/bin${format_reset}:"
-    results=$(find "$clone_path/bin/" -maxdepth 1 -perm -111 -type f)
+    results=$(find "$clone_path/bin/" -maxdepth 1 -perm +111 -type f)
     for r in $results; do
       bin_name="$(basename $r)"
-      installed="NO"
-      which "$bin_name" >/dev/null && installed="YES"
+      installed="YES"
+      which "$bin_name" >/dev/null || installed="NO"
       if [[ "$installed" == "YES" ]]; then
         echo -e "  * $bin_name (${format_orange}skipped, external binary exists${format_reset})"
       else
