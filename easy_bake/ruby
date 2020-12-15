@@ -13,7 +13,16 @@ go() {
 	fi
 
 	dependencies
-	ruby-install ruby $arguments --no-reinstall -- --with-openssl-dir=$(brew --prefix openssl) || echo "An error occurred while installing ruby"
+
+  if is_arm; then
+    ruby-install ruby $arguments --no-reinstall -c -- --with-openssl-dir=$(brew --prefix openssl) CFLAGS=-DUSE_FFI_CLOSURE_ALLOC=1
+  else
+    ruby-install ruby $arguments --no-reinstall -- --with-openssl-dir=$(brew --prefix openssl)
+  fi
+}
+
+function is_arm() {
+  [[ "$(uname -m)" == "arm64" ]]
 }
 
 dependencies() {
