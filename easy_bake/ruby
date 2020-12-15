@@ -17,7 +17,7 @@ go() {
 }
 
 dependencies() {
-	which ruby-install >/dev/null || dani install ruby-install
+	which ruby-install >/dev/null || $script_dir/../bin/dani install ruby-install
 	source /usr/local/share/ruby-install/ruby-install.sh &&
 		source /usr/local/share/ruby-install/functions.sh &&
 		source /usr/local/share/ruby-install/functions.sh &&
@@ -27,5 +27,6 @@ dependencies() {
 arguments="${@:2}"
 format_orange='\033[0;33m'
 format_reset='\033[0m'
+script_dir=$( cd "$( dirname "$0" )" && pwd )
 set -e
 go
