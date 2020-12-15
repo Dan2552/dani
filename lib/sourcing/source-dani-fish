@@ -1,4 +1,4 @@
 set script_dir (dirname (status --current-filename))
 
-set PATH $script_dir/bin $PATH
-set PATH $script_dir/install $PATH
+set PATH $script_dir/../../bin $PATH
+set PATH $script_dir/../../install $PATH
