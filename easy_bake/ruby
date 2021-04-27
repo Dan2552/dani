@@ -26,10 +26,16 @@ function is_arm() {
 }
 
 dependencies() {
+	ruby_install_path=""
+	if [[ -d "/usr/local/share/ruby-install" ]]; then
+		ruby_install_path="/usr/local/share/ruby-install"
+	else
+		ruby_install_path="/opt/homebrew/share/ruby-install"
+	fi
 	which ruby-install >/dev/null || $script_dir/../bin/dani install ruby-install
-	source /usr/local/share/ruby-install/ruby-install.sh &&
-		source /usr/local/share/ruby-install/functions.sh &&
-		source /usr/local/share/ruby-install/functions.sh &&
+	source $ruby_install_path/ruby-install.sh &&
+		source $ruby_install_path/functions.sh &&
+		source $ruby_install_path/functions.sh &&
 		package_manager=brew ruby=ruby ruby_version="$arguments" install_deps
 }
 
